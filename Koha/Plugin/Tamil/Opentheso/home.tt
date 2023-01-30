@@ -1,0 +1,11 @@
+[% INCLUDE "$PLUGIN_DIR/head.tt" %]
+
+<div class="row">
+ <div class="col-md-6">
+  [% markdown %] 
+ </div>
+</div>
+<div class="col-md-6">
+</div>
+
+[% INCLUDE "$PLUGIN_DIR/foot.tt" %]

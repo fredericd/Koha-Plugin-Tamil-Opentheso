@@ -1,0 +1,86 @@
+.tooltip > .tooltip-inner {
+  text-align: left;
+  background: #fafafa;
+  border: 1px solid black;
+  color: black;
+  font-size: 1.2em;
+}
+.tooltip-inner {
+  min-width: 100px;
+  max-width: 100%;
+  margin: 0;
+}
+.tooltip p {
+  padding: 3px;
+  margin: 0px;
+}
+#idxOpentheso {
+  display: block;
+}
+#idxOpentheso .content {
+  padding: 7px;
+}
+#idxOpentheso .searchsection {
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #B9D8D9;
+  padding: 4px;
+  background: #fafafa;
+}
+#idxOpentheso .searching {
+  background: url('/intranet-tmpl/prog/img/spinner-small.gif') no-repeat right center;
+}
+#idxOpentheso .result {
+  height:200px;
+  overflow:auto;
+}
+#idxOpentheso .selection {
+  height:1500px;
+  padding-top: 5px;
+}
+#idxOpentheso .separation h1 {
+  font-size:15px;
+}
+#idxOpentheso .selection h1 {
+  font-size: 13px;
+  text-align: right;
+}
+#idxOpentheso .microtheso {
+  margin-bottom: 10px;
+  border-radius: 5px;
+  border: 1px solid #B9D8D9;
+  padding: 4px;
+  background: #fafafa;
+}
+#idxOpentheso a {
+  color: black;
+}
+#idxOpentheso span.opentheso_term {
+  font-weight: bold;
+  color: #004d99;
+}
+#idxOpentheso a.opentheso_select, #idxOpentheso a.opentheso_remove {
+  font-weight: bold;
+  color: #004d99;
+}
+#idxOpentheso span.opentheso_select {
+  padding-right: 0px;
+  cursor: pointer;
+}
+#idxOpentheso span.opentheso_remove {
+  padding-right: 0px;
+  cursor: pointer;
+}
+#idxOpentheso span.opentheso_see {
+  background: transparent url('/plugin/Koha/Plugin/Tamil/Opentheso/img/ot-logo.png') no-repeat center right;
+  background-size: 15px;
+  padding-left: 15px;
+  margin-left: 4px;
+  cursor: pointer;
+}
+#opentheso_json {
+  display: none;
+}
+#where input {
+  padding-left: 10px;
+}
