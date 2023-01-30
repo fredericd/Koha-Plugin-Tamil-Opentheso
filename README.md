@@ -96,7 +96,7 @@ pouvez y revenir en vidant les zones de saisie.
   - **Masquer** — Pour masquer les sous-zones de saisie _classiques_ de la page
     de catalogage.
 
-![](screenshot-config.png)
+![](https://github.com/fredericd/Koha-Plugin-Tamil-Opentheso/raw/master/Koha/Plugin/Tamil/Opentheso/img/screenshot-config.png)
 
 **Paramétrage de Koha** — Pour utiliser le plugin Tamil Opentheso, il faut
 commencer par ajouter des zones MARC spécifiques à ses grilles de catalogage.
@@ -114,7 +114,40 @@ Pour afficher cette nouvelle zone, vous modifier vos feuilles de style XSL, OPAC
 et PRO. Par exemple pour l'OPAC, vous créez un template que vous appelez
 ensuite depuis la feuille de style de la page de détail :
 
-<script src="https://gist.github.com/fredericd/fb19ffe2ed650ffb5e36adbbcac07d79.js"></script>
+```xml
+<xsl:template name="tag_opentheso">
+  <xsl:param name="tag"/>
+  <xsl:param name="label"/>
+  <xsl:if test="marc:datafield[@tag=$tag]">
+    <span class="results_summary">
+      <span class="label">
+        <xsl:value-of select="$label"/>
+        <xsl:text> : </xsl:text>
+      </span>
+      <xsl:for-each select="marc:datafield[@tag=$tag]">
+        <a>
+          <xsl:attribute name="href">
+            <xsl:text>/cgi-bin/koha/opac-search.pl?q=an:</xsl:text>
+            <xsl:value-of select="marc:subfield[@code=4]"/>
+          </xsl:attribute>
+          <xsl:attribute name="class">
+            <xsl:text>ark</xsl:text>
+          </xsl:attribute>
+          <xsl:for-each select="marc:subfield[@code='a']">
+            <xsl:value-of select="."/>
+          </xsl:for-each>
+          <xsl:if test="not(marc:subfield[@code='a'])">
+            <xsl:text>Pas de terme</xsl:text>
+          </xsl:if>
+        </a>
+        <xsl:if test="not (position()=last())">
+          <xsl:text> ; </xsl:text>
+        </xsl:if>
+      </xsl:for-each>
+    </span>
+  </xsl:if>
+</xsl:template>
+```
 
 ## Catalogage
 
