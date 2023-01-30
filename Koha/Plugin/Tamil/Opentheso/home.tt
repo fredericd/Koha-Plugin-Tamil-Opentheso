@@ -1,7 +1,19 @@
 [% INCLUDE "$PLUGIN_DIR/head.tt" %]
 
+<style>
+.markdown {
+  font-size: 100%;
+}
+.markdown h2 {
+  margin-top: 20px;
+}
+.markdown img {
+  width: 100%;
+}
+</style>
+
 <div class="row">
- <div class="col-md-6">
+ <div class="col-md-6 markdown">
   [% markdown %] 
  </div>
 </div>

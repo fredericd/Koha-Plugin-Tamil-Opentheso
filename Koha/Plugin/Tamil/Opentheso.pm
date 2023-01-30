@@ -8,7 +8,7 @@ use C4::Biblio;
 use Koha::Cache;
 use Mojo::UserAgent;
 use Mojo::JSON qw(decode_json encode_json);
-use Text::Markdown qw/ markdown /;
+use Pithub::Markdown;
 use Template;
 
 
@@ -189,9 +189,18 @@ sub tool {
     }
     else {
         $template = $self->get_template({ file => 'home.tt' });
-        my $markdown = markdown($self->mbf_read("home.md"));
+        my $text = $self->mbf_read("home.md");
+        utf8::decode($text);
+        my $response = Pithub::Markdown->new->render(
+            data => {
+                text => $text,
+                context => "github/gollum",
+                mode => "gfm",
+            },
+        );
+        my $markdown = $response->raw_content;
         utf8::decode($markdown);
-        $template->param( markdown => $markdown);
+        $template->param( markdown => $markdown );
     }
     $template->param( c => $self->config() );
     $template->param( WS => $ws ) if $ws;

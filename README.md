@@ -44,7 +44,7 @@ points suivants :
 - Dans `koha-conf.xml`, activez les plugins.
 - Dans le fichier de configuration d'Apache, définissez l'alias `/plugins`.
   Faites en sorte que le répertoire pointé ait les droits nécessaires.
-- Installez au besoin le module Perl `Text::Markdown`.
+- Installez au besoin le module Perl `Pithub::Markdown`.
 
 **📁 TÉLÉCHARGEMENT** — Récupérez sur le site [Tamil](https://www.tamil.fr)
 l'archive de l'Extension **[Tamil
@@ -95,6 +95,8 @@ pouvez y revenir en vidant les zones de saisie.
     utiliser une autre sous-zone comme `$0` ou `$9`.
   - **Masquer** — Pour masquer les sous-zones de saisie _classiques_ de la page
     de catalogage.
+
+Par exemple :
 
 ![](https://github.com/fredericd/Koha-Plugin-Tamil-Opentheso/raw/master/Koha/Plugin/Tamil/Opentheso/img/screenshot-config.png)
 
