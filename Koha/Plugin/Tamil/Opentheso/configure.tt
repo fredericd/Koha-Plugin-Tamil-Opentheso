@@ -7,50 +7,14 @@
  <input type="hidden" name="class" value="[% CLASS %]"/>
  <input type="hidden" name="method" value="[% METHOD %]"/>
 
- <fieldset class="rows">
-  <legend>API Opentheso</legend>
-  <ol>
-   <li>
-    <label for="ws.url">Point d'accès: </label>
-    <input id="ws.url" type="input" name="ws.url" size="50" value="[% c.ws.url %]" />
-   </li>
-   <li>
-    <label for="ws.lang">Langue par défaut: </label>
-    <input id="ws.lang" type="input" name="ws.lang" size="50" value="[% c.ws.lang %]" />
-   </li>
-   <li>
-    <label for="ws.ark">Serveur ARK: </label>
-    <input id="ws.ark" type="input" name="ws.ark" size="50" value="[% c.ws.ark %]" />
-   </li>
-  </ol>
- </fieldset>
+ <div id='editor_holder'></div>
 
  <fieldset class="rows">
-  <legend>Catalogage</legend>
+  <legend>Configuration</legend>
   <ol>
    <li>
-    <label for="catalog.enabled">Activer:</label>
-    <input id="catalog.enabled" type="checkbox" name="catalog.enabled" size="15" value="1" [% IF c.catalog.enabled == 1 %]checked[% END %] />
-    le catalogage avec le thesaurus Opentheso
-   </li>
-   <li>
-    <label for="catalog.fields">Champs:</label>
-    <textarea id="catalog.fields" name="catalog.fields" rows="5" cols="100">[% c.catalog.fields %]</textarea>
-    <br/>
-    <br/>
-    <p>
-      Entrez ici la liste des thesaurus/collections. Exemple:
-      Sujet 697 th17 GD14
-    </p>
-   </li>
-   <li>
-    <label for="catalog.ark">Sous-zone ARK:</label>
-    <input id="catalog.ark" type="input" name="catalog.ark" size="5" value="[% c.catalog.ark %]" />
-   </li>
-   <li>
-    <label for="catalog.mask">Masquer:</label>
-    <input id="catalog.mask" type="checkbox" name="catalog.mask" size="15" value="1" [% IF c.catalog.mask == 1 %]checked[% END %] />
-    les zones de saisie classiques
+    <label for="c">JSON:</label>
+    <pre><textarea id="c" name="c" rows="40" cols="100">[% c %]</textarea></pre>
    </li>
   </ol>
  </fieldset>

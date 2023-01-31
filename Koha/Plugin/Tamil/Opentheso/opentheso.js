@@ -9,12 +9,15 @@ function pageCatalog() {
   $('head').append('<link rel="stylesheet" type="text/css" href="/plugin/Koha/Plugin/Tamil/Opentheso/opentheso.css">');
 
   const c = ot.c;
-  const lang = c.ws.lang;
-  const tags = c.catalog.fields.map(field => field.tag);
+  console.log(c);
+  const fields = c.fields;
+  const tags = fields.map(field => field.tag);
+  const pertag = c.pertag = {};
+  fields.forEach(field => pertag[field.tag] = field);
 
   // Récupération des arks
   let arks = {};
-  let regex = tags.map(tag => `tag_${tag}_subfield_${c.catalog.ark}`).join('|');
+  let regex = fields.map(field => `tag_${field.tag}_subfield_${field.ark}`).join('|');
   regex = new RegExp(regex);
   $('.input_marceditor').each(function(){
     const id = this.id;
@@ -36,7 +39,7 @@ function pageCatalog() {
     e.preventDefault();
     selectTab(this.hash);
   });
-  const options = c.catalog.fields.map(f => `<option value="${f.tag}">${f.name}</option>`).join("\n");
+  const options = fields.map(f => `<option value="${f.tag}">${f.name}</option>`).join("\n");
   $('#addbibliotabs .tab-content').append(`
     <div id="tab99XX" role="tabpanel" class="tab-pane active">
       <div id="idxOpentheso">
@@ -62,19 +65,18 @@ function pageCatalog() {
   $("a[href='#tab1XX']").click();
   $("a[href='#tab0XX']").click();
 
-
   // Cacher les zones de saisies classiques
   if (c.catalog.mask) {
     let regex = tags.map(tag => `tag_${tag}_`).join('|');
     $('.tag').filter(function(){ return this.id.match(regex); }).hide();
   }
 
-  const pertag = c.catalog.pertag;
   Object.keys(arks).forEach( (tag) => {
     const selection = ot.selection[tag] = [];
-    const iconf = pertag[tag];
+    const field = pertag[tag];
     const value = arks[tag].join(',');
-    const url = `${c.ws.url}/searchwidgetbyark?q=${value}&lang=${lang}&theso=${iconf.theso}&format=full`;
+    const lang = field.lang || 'fr';
+    const url = `${field.server}/api/searchwidgetbyark?q=${value}&lang=${lang}&theso=${field.theso}&format=full`;
     $.getJSON (url, function(data) {
       data.forEach((t) => {
         const last = t[t.length-1];
@@ -115,11 +117,12 @@ function pageCatalog() {
       const value = $(this).val();
       if (value.length < 2) { return; }
       let tag = $('#selectedOpentheso').val();
+      const field = pertag[tag];
+      const lang = field.lang || 'fr';
       let selectedLang = $('#ToutesLanguesOpentheso').prop("checked") ? '' : `&lang=${lang}`;
-      const iconf = pertag[tag];
-      let url = `${c.ws.url}/searchwidget?q=${value}${selectedLang}&theso=${iconf.theso}&format=full`;
-      if (iconf.group) {
-        url = url + `&group=${iconf.group}`;
+      let url = `${field.server}/api/searchwidget?q=${value}${selectedLang}&theso=${field.theso}&format=full`;
+      if (field.group) {
+        url = url + `&group=${field.group}`;
       }
       console.log(`URL: ${url}`);
       const html = [];
@@ -149,9 +152,7 @@ function pageCatalog() {
           term.paths.push(p);
         });
         $('#idxOpentheso .search').removeClass('searching');
-        console.log(pathPerTerm);
         currPathPerTerm = pathPerTerm;
-        const lang = c.ws.lang;
         Object.keys(pathPerTerm).forEach((ark) => {
           const term = pathPerTerm[ark];
           html.push(getHtmlTerm(term, tag, 'select'));
@@ -178,7 +179,8 @@ function pageCatalog() {
     }
   });
 
-  // Alimentation des <input> avec les termes/id Opentheso
+  // Alimentation des <input> avec les termes/id Opentheso quand le formulaire
+  // est envoyé
   const classicCheck = Check; // Au secours ! une fonction Check() globale.
   Check = function() {
     // Suppression des zones classiques
@@ -187,15 +189,16 @@ function pageCatalog() {
 
     const html = [];
     let iTag = 1;
-    tags.forEach((tag) => {
+    fields.forEach((field) => {
+      const {tag, ark} = field;
       const selection = ot.selection[tag];
       if (selection === undefined) return;
       selection.forEach((term) => {
         html.push(`
           <input type="text" name="tag_${tag}_indicator1_${iTag}" value=" " />
           <input type="text" name="tag_${tag}_indicator2_${iTag}" value=" " />
-          <input type="text" name="tag_${tag}_code_${c.catalog.ark}_${iTag}_1" value="${c.catalog.ark}" />
-          <input type="text" name="tag_${tag}_subfield_${c.catalog.ark}_${iTag}_1" value="${term.ark}" />
+          <input type="text" name="tag_${tag}_code_${ark}_${iTag}_1" value="${ark}" />
+          <input type="text" name="tag_${tag}_subfield_${ark}_${iTag}_1" value="${term.ark}" />
           <input type="text" name="tag_${tag}_code_a_${iTag}_2" value="a" />
           <input type="text" name="tag_${tag}_subfield_a_${iTag}_2" value="${term.term}" />
         `);
@@ -211,17 +214,16 @@ function pageCatalog() {
 function displaySelection() {
   // Màj de la zone des termes sélectionnés
   const c = ot.c;
-  const pertag = c.catalog.pertag;
+  const fields = c.fields;
   const selection = ot.selection;
   const terms = [];
   let html = [];
-  const tags = c.catalog.fields.map(field => field.tag);
-  tags.forEach((tag) => {
+  fields.forEach((field) => {
+    const tag = field.tag;
     if (selection[tag] === undefined) return;
-    const iconf = pertag[tag];
     html.push(`
       <div class="microtheso">
-        <h1>${iconf.name}</h1>
+        <h1>${field.name}</h1>
     `);
     selection[tag].forEach((term) => {
       html.push(getHtmlTerm(term, tag, 'remove'));
@@ -281,7 +283,7 @@ function getHtmlTerm(term, tag, action) {
       <span class="opentheso_term">
         <a class="ark" data-toggle="tooltip" data-placement="right" title="${tooltip}">${term.term}</a>
       </span>
-      <span class="opentheso_see" ark="${term.ark}"></span>
+      <span class="opentheso_see" tag="${tag}" ark="${term.ark}"></span>
     </p>
   `);
   return html.join("\n");
@@ -290,8 +292,9 @@ function getHtmlTerm(term, tag, action) {
 
 function seeEvent() {
   $('.opentheso_see').click(function(){
+    const tag = $(this).attr("tag");
     const ark = $(this).attr("ark");
-    const url = `${ot.c.ws.ark}${ark}`;
+    const url = `${ot.c.pertag[tag].server}/api/ark:/${ark}`;
     window.open(url, '_blank');
   });
 }
@@ -299,7 +302,7 @@ function seeEvent() {
 
 function run(conf) {
   const c = ot.c = conf;
-  if (c.catalog.enabled && $('body').is("#cat_addbiblio")) {
+  if (c.catalog.enable && $('body').is("#cat_addbiblio")) {
     pageCatalog();
   }
 }

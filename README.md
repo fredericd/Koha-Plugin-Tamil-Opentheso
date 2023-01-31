@@ -20,15 +20,16 @@ proposé dans la grille de services de la TGIR
 développé à la demande de Frantiq et mis à disposition de la communauté des
 utilisateurs de Koha.
 
-Le plugin **Tamil Opentheso** permet d'exploiter Opentheso depuis Koha et de
-réaliser deux grandes catégories de tâches :
+Le plugin **Tamil Opentheso** permet d'exploiter depuis Koha un ou plusieurs
+thesaurus gérés dans un ou plusieurs serveurs Opentheso et de réaliser deux
+grandes catégories de tâches :
 
 1. **Catalogage** — Dans les grilles de saisie de Koha, un onglet Opentheso est
-   ajouté. Il contient la liste des termes d'Opentheso contenu dans la notice
+   ajouté. Il contient la liste des termes d'Opentheso contenus dans la notice
    MARC. Une barre de recherche permet d'interroger directement des thesaurus
    et de lier des termes à la notice Koha. La forme principale du terme est
    placée dans une sous-zone MARC ($a) et l'identifiant ARK du terme dans une
-   autre sous-zone (paramétrable). Les termes sont affichéxes avec des
+   autre sous-zone (paramétrable). Les termes sont affichés avec des
    informations extraites des thesaurus : chemin complet du terme dans sa/ses
    hiérarchies ; traductions ; notes et variantes.
 
@@ -56,58 +57,97 @@ précédente. Cliquez sur Télécharger.
 
 ## Configuration
 
+### Paramétrage du plugin
+
 Dans les Outils de plugin, vous voyez l'extension **Tamil Opentheso**. Vous
-lancez le plugin puis vous cliquez sur Configurer. La page de configuration est
-divisée en plusieurs sections. Notez qu'après l'installation du plugin, les
-paramètres sont initialisés par défaut pour lier Koha au thesaurus
-[Pactols](https://pactols.frantiq.fr). C'est une bonne base de travail. Vous
-pouvez y revenir en vidant les zones de saisie.
+lancez le plugin puis vous cliquez sur Configurer. Vous y trouver une zone de
+saisie dans laquelle se trouve la structure de données sérialisée en JSON qui
+pilote le fonctionnement du plugin.  Notez qu'après l'installation du plugin,
+les paramètres sont initialisés par défaut pour lier Koha au thesaurus
+[Pactols](https://pactols.frantiq.fr), ainsi qu'à deux autres thesaurus gérés
+dans deux autres serveurs Opentheso. C'est une bonne base de travail. Vous
+pouvez y revenir en vidant la zone de saisie.
 
-- **API Opentheso** — Cette section contient les informations d'accès aux
-  services web d'Opentheso.
+```json
+{
+  "fields": [
+    {
+      "tag": "695",
+      "ark": "4",
+      "name": "Architecture",
+      "server": "https://opentheso.huma-num.fr/opentheso",
+      "theso": "th366",
+      "lang": "fr"
+    },
+    {
+      "tag": "696",
+      "ark": "4",
+      "name": "Type et matériaux d'inscriptions",
+      "server": "https://thesaurus.mom.fr/opentheso",
+      "theso": "4",
+      "group": "MT94,MT_13",
+      "lang": "fr"
+    },
+    {
+      "tag": "697",
+      "ark": "4",
+      "name": "Lieu",
+      "server": "https://pactols.frantiq.fr/opentheso",
+      "theso": "th17",
+      "lang": "fr"
+    },
+    {
+      "tag": "698",
+      "ark": "4",
+      "name": "Époque",
+      "server": "https://pactols.frantiq.fr/opentheso",
+      "theso": "TH_1",
+      "group": "G124",
+      "lang": "fr"
+    },
+    {
+      "tag": "699",
+      "ark": "4",
+      "name": "Sujet",
+      "server": "https://pactols.frantiq.fr/opentheso",
+      "theso": "TH_1",
+      "group": "G116,G126,G122,G173,G128,G137,G120,G135,G118,G130,G132",
+      "lang": "fr"
+    }
+  ],
+  "catalog": {
+    "enable": 1,
+    "mask": 1
+  }
+}
+```
 
-  - **Point d'accès** — L'URL des services web d'un serveur Opentheso.
-  - **Langue par défaut** — Un code de langue ISO, par exemple `fr` pour
-    français ou `en` pour anglais. Si le thesaurus est multilingue, cela permet
-    de choisir la langue des termes qui sont affichés et recopiés dans les
-    notices MARC.
-  - **Serveur ARK** — Le point d'entré du serveur ARK qui sera utilisé pour
-    générer un lien direct depuis Koha vers le serveur Opentheso. Dans les
-    notices bibliographiques, on trouve l'identifiant ARK d'un terme, par
-    exemple `26678/pcrttcpeEPi2K0`. Le lien vers le terme sera : `<Serveur
-    ARK><ARK>`. Par exemple :
-    `https://ark.frantiq.fr/ark:/26678/pcrttcpeEPi2K0`.
+- **fields** — C'est un tableau les champs liés à un thesaurus Opentheso :
+  - **tag** — Le tag de la zone MARC où le terme est placé. Le terme retenu est
+    placé dans la sous-zone **$a** de cette zone.
+  - **ark** — La sous-zone dans laquelle recopié l'identifiant ARK du terme. En
+    général, c'est un code **$4** ou **$0**.
+  - **name** — Le nom du thesaurus, tel qu'il sera présenté par le plugin.
+  - **server** — L'URL du serveur Opentheso.
+  - **theso** — Le code du thesaurus.
+  - **group** — Information facultative. Si absent, tout le thesaurus est
+    utilisé, sinon le plugin utilse les collections (ou groupes) listées ici
+    (séparées par des virgules).
+  - **lang** — Le code langue (fr, en) à utiliser. Les termes seront affichés
+    dans cette langue. Les termes retenus seront dans cette langue.
+- **catalog** — Les paramétres d'utilisation du plugin en catalogage Koha.
+  - **enable** — Active ou non le plugin sur la page de catalogage.
+  - **mask** — Masque les champs de catalogage _classiques_.
+### Paramétrage de Koha
 
-- **Catalogage** — Cette section permet de paramétrer le fonctionnement du
-  plugin sur la page de catalogage de Koha.
-
-  - **Activer** — Pour activer l'utilisation du plugin sur la page de
-    catalogage.
-  - **Champs** — Contient la liste des thesaurus liés à des zones MARC. Il y a
-    une ligne par thesaurus/zone. Par exemple : `Époque 698 TH_1 G124` lie la
-    zone 698 au thesaurus Époque, dont le code Opentheso est `TH_1` et
-    restreint à la collection `G124`. Chaque ligne contient les éléments
-    suivants séparés par des espaces : 1) nom du thesaurus, 2) zone MARC, 3)
-    code thesaurus, 4) optionnelement, une ou des collections séparés par des
-    virgules. Voir plus bas pour le paramétrage de Koha.
-  - **Sous-zone ARK** — La sous-zone qui contient les identifiants ARK des
-    termes Opentheso. Par défaut `$4`. Certaines bibliothèques préféreront
-    utiliser une autre sous-zone comme `$0` ou `$9`.
-  - **Masquer** — Pour masquer les sous-zones de saisie _classiques_ de la page
-    de catalogage.
-
-Par exemple :
-
-![](https://github.com/fredericd/Koha-Plugin-Tamil-Opentheso/raw/master/Koha/Plugin/Tamil/Opentheso/img/screenshot-config.png)
-
-**Paramétrage de Koha** — Pour utiliser le plugin Tamil Opentheso, il faut
-commencer par ajouter des zones MARC spécifiques à ses grilles de catalogage.
-Il faut modifier ses feuilles de styles XSL pour les afficher. Il faut également
-modifier le paramétrage du moteur d'indexation.
+Pour utiliser le plugin Tamil Opentheso, il faut commencer par ajouter des
+zones MARC spécifiques à ses grilles de catalogage.  Il faut modifier ses
+feuilles de styles XSL pour les afficher. Il faut également modifier le
+paramétrage du moteur d'indexation.
 
 Vous créez par exemple une zone **699** pour la lier à un thesaurus **Sujet**.
-Votre zone 699 doit contenir deux sous-zones, une première pour contenir le
-terme et une seconde pour contenir son identifiant ARK. Ce serait par exemple :
+Votre zone 699 doit contenir deux sous-zones, une première pour
+terme retenu et une seconde pour contenir son identifiant ARK. Ce serait par exemple :
 
 - `$a` : Sujet
 - `$4` : ARK

@@ -8,8 +8,10 @@ use C4::Biblio;
 use Koha::Cache;
 use Mojo::UserAgent;
 use Mojo::JSON qw(decode_json encode_json);
+use JSON qw/ to_json /;
 use Pithub::Markdown;
 use Template;
+use YAML;
 
 
 our $metadata = {
@@ -40,7 +42,8 @@ sub new {
 sub config {
     my $self = shift;
 
-    my $c = $self->{args}->{c};
+    my $c = $self->{c};
+    my $logger = $self->{logger};
     unless ($c) {
         $c = $self->retrieve_data('c');
         if ($c) {
@@ -51,39 +54,6 @@ sub config {
             $c = {};
         }
     }
-    $c->{ws} ||= {};
-    $c->{ws}->{url} ||= 'https://pactols.frantiq.fr/opentheso/api';
-    $c->{ws}->{lang} ||= 'fr';
-    $c->{ws}->{ark} ||= 'https://ark.frantiq.fr/ark:/';
-    $c->{catalog} ||= {};
-    $c->{catalog}->{enabled} ||= 0;
-    $c->{catalog}->{fields} ||= [];
-    $c->{catalog}->{fields} = [
-        {
-            name => 'Sujet',
-            tag => '699',
-            theso => 'TH_1',
-            group => 'G116,G126,G122,G173,G128,G137,G120,G135,G118,G130,G132',
-        },
-        {
-            name => 'Époque',
-            tag => '698',
-            theso => 'TH_1',
-            group => 'G124',
-        },
-        {
-            name => 'Lieu',
-            tag => '697',
-            theso => 'th17',
-        }
-    ] if @{$c->{catalog}->{fields}} == 0;
-    $c->{catalog}->{ark} ||= '4';
-    $c->{catalog}->{mask} ||= 0;
-    
-    $c->{catalog}->{pertag} = {};
-    for my $field (@{$c->{catalog}->{fields}}) {
-        $c->{catalog}->{pertag}->{$field->{tag}} = $field;
-    }
 
     $c->{metadata} = $self->{metadata};
 
@@ -93,86 +63,25 @@ sub config {
 }
 
 
-sub get_form_config {
-    my $cgi = shift;
-    my $c = {
-        ws => {
-            url => undef,
-            lang => undef,
-            ark => undef,
-        },
-        catalog => {
-            enabled => 0,
-            fields => 0,
-            ark => 0,
-            mask => 0,
-        },
-    };
-
-    my $set;
-    $set = sub {
-        my ($node, $path) = @_;
-        return if ref($node) ne 'HASH';
-        for my $subkey ( keys %$node ) {
-            my $key = $path ? "$path.$subkey" : $subkey;
-            my $subnode = $node->{$subkey};
-            if ( ref($subnode) eq 'HASH' ) {
-                $set->($subnode, $key);
-            }
-            else {
-                $node->{$subkey} = $cgi->param($key);
-            }
-        }
-    };
-
-    $set->($c);
-    return $c;
-}
-
-
 sub configure {
     my ($self, $args) = @_;
     my $cgi = $self->{'cgi'};
 
+    my $template = $self->get_template({ file => 'configure.tt' });
+    my $c;
     if ( $cgi->param('save') ) {
-        my $c = get_form_config($cgi);
-        my @fields;
-        for (split /\n/, $c->{catalog}->{fields}) {
-            s/\r$//g;
-            s/\n$//g;
-            s/  / /g;
-            my @values = split / /, $_;
-            my $field = {};
-            if (@values == 3 || @values == 4) {
-                $field->{name} = $values[0];
-                $field->{tag} = $values[1];
-                $field->{theso} = $values[2];
-                $field->{group} = $values[3] if @values == 4;
-                push @fields, $field;
-            }
-        }
-        $c->{catalog}->{fields} =  @fields ? \@fields : '';
-        $self->store_data({ c => encode_json($c) });
-        print $self->{'cgi'}->redirect(
-            "/cgi-bin/koha/plugins/run.pl?class=Koha::Plugin::Tamil::Opentheso&method=tool");
+        $c = $cgi->param('c');
+        $self->store_data({ c => $c });
     }
     else {
-        my $template = $self->get_template({ file => 'configure.tt' });
-        my $c = $self->config();
-        $c->{catalog}->{fields} = join("\n", map {
-            my $field = $_;
-            my @values = (
-                $field->{name},
-                $field->{tag},
-                $field->{theso},
-            );
-            push @values, $field->{group} if $field->{group}; 
-            join(' ', @values);
-        } @{$c->{catalog}->{fields}} );
-
-        $template->param( c => $c );
-        $self->output_html( $template->output() );
+        $c = $self->retrieve_data('c');
+        unless ($c) {
+            $c =  $self->mbf_read("frantiq-conf.json");
+            utf8::decode($c);
+        }
     }
+    $template->param( c => $c );
+    $self->output_html( $template->output() );
 }
 
 
@@ -195,7 +104,6 @@ sub tool {
             data => {
                 text => $text,
                 context => "github/gollum",
-                mode => "gfm",
             },
         );
         my $markdown = $response->raw_content;
@@ -211,8 +119,8 @@ sub tool {
 sub intranet_js {
     my $self = shift;
     my $js_file = $self->get_plugin_http_path() . "/opentheso.js";
-    my $c = encode_json($self->config());
-    utf8::decode($c);
+    my $c = $self->config();
+    $c = to_json($c);
     return <<EOS;
 <script>
 \$(document).ready(() => {
