@@ -84,3 +84,53 @@
 #where input {
   padding-left: 10px;
 }
+
+#opentheso h1 {
+  font-size: 110%;
+  text-align: right;
+  text-transform: uppercase;
+}
+#opentheso h2 {
+  font-size: 110%;
+}
+.opentheso-field {
+  border-radius: 5px;
+  border: 1px solid #B9D8D9;
+  padding: 10px;
+  margin-bottom: 20px;
+  background: #fafafa;
+}
+.ark-count {
+  color: white;
+  background-color: #0074ad;
+  background-color: grey;
+  padding: 2px 5px 2px 5px;
+  margin: 0;
+  margin-right: 10px;
+  border-radius: 15px;
+  font-size: 70%;
+}
+.opentheso-hierarchie-1 {
+  margin-left: 20px;
+}
+.opentheso-hierarchie-2 {
+  margin-left: 40px;
+}
+.opentheso-hierarchie-3 {
+  margin-left: 60px;
+}
+.opentheso-hierarchie-4 {
+  margin-left: 80px;
+}
+.opentheso-hierarchie-5 {
+  margin-left: 100px;
+}
+.opentheso-hierarchie-6 {
+  margin-left: 120px;
+}
+.opentheso-hierarchie-7 {
+  margin-left: 140px;
+}
+.opentheso-hierarchie-8 {
+  margin-left: 160px;
+}

@@ -133,6 +133,11 @@ EOS
 }
 
 
+sub opac_js {
+    shift->intranet_js();
+}
+
+
 sub install() {
     my ($self, $args) = @_;
 }

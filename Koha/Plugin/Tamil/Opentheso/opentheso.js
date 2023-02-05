@@ -1,6 +1,6 @@
-(function( jQuery, undefined ) {
+  (function( jQuery, undefined ) {
 
-const ot = {};
+  const ot = {};
 
 
 function pageCatalog() {
@@ -9,11 +9,8 @@ function pageCatalog() {
   $('head').append('<link rel="stylesheet" type="text/css" href="/plugin/Koha/Plugin/Tamil/Opentheso/opentheso.css">');
 
   const c = ot.c;
-  console.log(c);
-  const fields = c.fields;
+  const {fields, pertag} = c;
   const tags = fields.map(field => field.tag);
-  const pertag = c.pertag = {};
-  fields.forEach(field => pertag[field.tag] = field);
 
   // Récupération des arks
   let arks = {};
@@ -109,7 +106,6 @@ function pageCatalog() {
   });
   $('#idxOpentheso .search').keypress(function(e) {
     if (e.which == 27) {
-      console.log("Escape");
       $('#idxOpentheso .result').html('');
       $(this).preventDefault();
     } else if (e.which === 13) {
@@ -124,7 +120,6 @@ function pageCatalog() {
       if (field.group) {
         url = url + `&group=${field.group}`;
       }
-      console.log(`URL: ${url}`);
       const html = [];
       $('#idxOpentheso .search').addClass('searching');
       $('#idxOpentheso .result').html("");
@@ -162,7 +157,6 @@ function pageCatalog() {
         $('.opentheso_select').click(function(){
           const ark = $(this).attr("ark");
           const tag = $(this).attr("tag");
-          //console.log(`click ${ark} - ${tag}`);
           const term = currPathPerTerm[ark];
           const selection = ot.selection;
           selection[tag] ??= [];
@@ -174,7 +168,6 @@ function pageCatalog() {
         seeEvent();
       }).fail(function(){
         $('#idxOpentheso .search').removeClass('searching');
-        //console.log("Erreur recherche");
       });
     }
   });
@@ -300,10 +293,163 @@ function seeEvent() {
 }
 
 
+function pageOpacDetail() {
+  $('head').append('<link rel="stylesheet" type="text/css" href="/plugin/Koha/Plugin/Tamil/Opentheso/opentheso.css">');
+  const {c} = ot;
+  const arkPerTag = {};
+  // Récupération des arks
+  $('.opentheso-tag-ark').each(function(){
+    const elt = $(this);
+    const ark = elt.attr('ark');
+    const tag = elt.attr('tag');
+    const arks = arkPerTag[tag] ||= [];
+    arks.push(ark);
+  });
+  if (Object.keys(arkPerTag).length === 0) return;
+
+  $('.nav-tabs').append(`
+    <li id="tab_opentheso" class="nav-item" role="presentation">
+     <a href="#opentheso" class="nav-link" id="tab_opentheso-tab" data-toggle="tab" role="tab" aria-controls="tab_opentheso" aria-selected="false">Opentheso</a>
+    </li>
+  `);
+  $('.tab-content').append(`
+    <div id="opentheso" class="tab-pane" role="tabpanel" aria-labelledby="tab_opentheso-tab">
+      <button class="btn btn-primary" id="opentheso-query">Interroger</button>
+    </div>
+  `);
+
+  let tabClicked = false;
+  const arkCount = new Set();
+  $('a[href=#opentheso]').click(function() {
+    if (tabClicked) return;
+    tabClicked = true;
+    let firstField = true;
+    $('#opentheso').html("<div>Chargement en cours...</div>");
+    const searchBase = '/cgi-bin/koha/opac-search.pl?q=an:';
+    const tags = Object.keys(arkPerTag);
+    retrievedTagsCount = 0;
+    tags.forEach((tag) => {
+      const arks = arkPerTag[tag];
+      const field = c.pertag[tag];
+      const lang = field.lang || 'fr';
+      const url = `${field.server}/api/searchwidgetbyark?q=${arks.join(',')}&lang=${lang}&theso=${field.theso}&format=full`;
+      $.getJSON(url, function(terms) {
+        retrievedTagsCount++;
+        let html = [];
+        html.push(`
+          <div id="opentheso-${tag}" class="opentheso-field">
+            <h1>${field.name}</h1>
+        `);
+        terms.forEach((paths) => {
+          const allArks = paths.map(p => p.arkId);
+          allArks.forEach(ark => arkCount.add(ark));
+          const max = paths.length;
+          const term = paths[paths.length-1];
+          html.push(`
+            <div class="opentheso-term">
+              <h2>
+                <a href="${searchBase}${term.arkId}" target="_blank">
+                  ${term.label}
+                </a>
+                <span class="ark-count ark-${term.arkId.replace(/\//g, '-')}"></span>
+              </h2>
+              <ul>
+          `);
+          if (term.altLabel) {
+            html.push(`
+              <li>
+                <b>Synonymes: </b>
+                ${term.altLabel.join(' ; ')}
+              </li>
+            `);
+          }
+          if (term.definition) {
+            html.push(`
+              <li>
+                <b>Définition: </b>
+                ${term.definition.join(' ')}
+              </li>
+            `);
+          }
+          if (paths.length > 1) {
+            html.push(`
+              <li>
+                <b>Hiérarchie:</b>
+            `);
+            for (let i=0; i < max; i++) {
+              const arkQuery = allArks.slice(i, max).join(' OR ');
+              const t = paths[i];
+              const linkBottom = i !== max-1
+                ? `
+                  <a
+                    href="${searchBase}${arkQuery}"
+                    title="Tous les termes de la hiérarchie"
+                    target="_blank"
+                  >
+                    ⬇️
+                  </a>`
+                : '';
+              html.push(`
+                <div class="opentheso-hierarchie-${i}">
+                  <a href="${searchBase}${t.arkId}" target="_blank">
+                    ${t.label}
+                  </a>
+                  <span class="ark-count ark-${t.arkId.replace(/\//g, '-')}"></span>
+                  ${linkBottom}
+                </div>`);
+            }
+            html.push('</ul></li>');
+          }
+          html.push('</ul></div>');
+        });
+        html.push('</div>');
+        html = html.join("\n");
+        if (firstField) {
+          $('#opentheso').html(html);
+          firstField = false;
+        } else {
+          $('#opentheso').append(html);
+        }
+        if (retrievedTagsCount == tags.length) {
+          const urlBase = '/es/koha_frantiq_biblios/_count?q=koha-auth-number:';
+          let arks = Array.from(arkCount);
+          let data = [];
+          arks.forEach(ark => data.push(
+            '{"size": 0,"query": {"query_string": { "query": "koha-auth-number:\\"' +
+            ark + '\\"" } } }'
+          ));
+          data = data.join("\n\n");
+          data = "{ }\n" + data + "\n"; // Chaque saut à ligne compte dans un multi-search ES...
+          const url = '/es/koha_frantiq_biblios/_msearch';
+          $.post({
+            type: "POST",
+            url,
+            data,
+            contentType: 'application/x-ndjson',
+            success: function(res) {
+              arks.forEach((ark, i) => {
+                const count = res.responses[i].hits.total;
+                const e = $(`.ark-${ark.replace(/\//g, '-')}`);
+                e.html(count);
+              });
+            },
+          });
+        }
+      });
+    });
+  });
+}
+
 function run(conf) {
   const c = ot.c = conf;
+  const pertag = c.pertag = {};
+  c.fields.forEach(field => pertag[field.tag] = field);
+
   if (c.catalog.enable && $('body').is("#cat_addbiblio")) {
     pageCatalog();
+  }
+  if ($('body').is('#opac-detail')) {
+    pageOpacDetail();
   }
 }
 
