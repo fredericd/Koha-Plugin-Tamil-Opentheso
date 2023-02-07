@@ -110,6 +110,9 @@
   border-radius: 15px;
   font-size: 70%;
 }
+#opentheso ul {
+  padding-left: 15px;
+}
 .opentheso-hierarchie-1 {
   margin-left: 20px;
 }

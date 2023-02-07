@@ -351,7 +351,7 @@ function pageOpacDetail() {
                 <a href="${searchBase}${term.arkId}" target="_blank">
                   ${term.label}
                 </a>
-                <span class="ark-count ark-${term.arkId.replace(/\//g, '-')}"></span>
+                <span class="ark-count ark-${term.arkId.replace(/\//g, '-')}">0</span>
               </h2>
               <ul>
           `);
@@ -371,22 +371,43 @@ function pageOpacDetail() {
               </li>
             `);
           }
+          if (term.labels) {
+            const {labels} = term;
+            html.push(`
+              <li>
+                <b>Traduction: </b>
+                ${Object.keys(labels).sort().map(lang => lang + ': ' + labels[lang]).join(' ; ')}
+              </li>
+            `);
+          }
+          console.log(term);
           if (paths.length > 1) {
             html.push(`
               <li>
                 <b>Hiérarchie:</b>
             `);
             for (let i=0; i < max; i++) {
-              const arkQuery = allArks.slice(i, max).join(' OR ');
               const t = paths[i];
-              const linkBottom = i !== max-1
+              const arkQueryDown = allArks.slice(i, max).join(' OR ');
+              const arkQueryTop = allArks.slice(0, i+1).join(' OR ');
+              const linkDown = i !== max-1
                 ? `
                   <a
-                    href="${searchBase}${arkQuery}"
-                    title="Tous les termes de la hiérarchie"
+                    href="${searchBase}${arkQueryDown}"
+                    title="Tous les termes vers le bas"
                     target="_blank"
                   >
                     ⬇️
+                  </a>`
+                : '';
+              const linkTop = i > 0
+                ? `
+                  <a
+                    href="${searchBase}${arkQueryTop}"
+                    title="Tous les termes vers le haut"
+                    target="_blank"
+                  >
+                    ⬆️
                   </a>`
                 : '';
               html.push(`
@@ -394,8 +415,9 @@ function pageOpacDetail() {
                   <a href="${searchBase}${t.arkId}" target="_blank">
                     ${t.label}
                   </a>
-                  <span class="ark-count ark-${t.arkId.replace(/\//g, '-')}"></span>
-                  ${linkBottom}
+                  <span class="ark-count ark-${t.arkId.replace(/\//g, '-')}">0</span>
+                  ${linkTop}
+                  ${linkDown}
                 </div>`);
             }
             html.push('</ul></li>');
