@@ -116,6 +116,9 @@
 .opentheso-hierarchie-1 {
   margin-left: 20px;
 }
+.opentheso-tree-search {
+  cursor: pointer;
+}
 .opentheso-hierarchie-2 {
   margin-left: 40px;
 }

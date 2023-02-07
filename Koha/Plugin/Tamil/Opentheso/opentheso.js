@@ -380,7 +380,6 @@ function pageOpacDetail() {
               </li>
             `);
           }
-          console.log(term);
           if (paths.length > 1) {
             html.push(`
               <li>
@@ -410,6 +409,17 @@ function pageOpacDetail() {
                     ⬆️
                   </a>`
                 : '';
+              const linkTree = i > 0
+                ? `
+                  <span
+                    ark="${t.arkId}"
+                    tag="${tag}"
+                    class="opentheso-tree-search"
+                    title="Tous les termes de l'arbre"
+                  >
+                    ↘️
+                  </span>`
+                : '';
               html.push(`
                 <div class="opentheso-hierarchie-${i}">
                   <a href="${searchBase}${t.arkId}" target="_blank">
@@ -418,6 +428,7 @@ function pageOpacDetail() {
                   <span class="ark-count ark-${t.arkId.replace(/\//g, '-')}">0</span>
                   ${linkTop}
                   ${linkDown}
+                  ${linkTree}
                 </div>`);
             }
             html.push('</ul></li>');
@@ -455,6 +466,19 @@ function pageOpacDetail() {
                 e.html(count);
               });
             },
+          });
+          $('.opentheso-tree-search').click(function() {
+            const e = $(this);
+            const ark = e.attr('ark');
+            const tag = e.attr('tag');
+            const field = c.pertag[tag];
+            const url = `${field.server}/api/ark/allchilds?ark=${ark}`;
+            console.log(url);
+            $.getJSON(url, function(res) {
+              if (res.message) return;
+              const url = `${searchBase}${res.arks.join(' OR ')}`;
+              window.open(url, '_blank').focus();
+            });
           });
         }
       });
