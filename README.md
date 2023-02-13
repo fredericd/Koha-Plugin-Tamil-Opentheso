@@ -125,7 +125,7 @@ pouvez y revenir en vidant la zone de saisie.
 - **fields** — C'est un tableau les champs liés à un thesaurus Opentheso :
   - **tag** — Le tag de la zone MARC où le terme est placé. Le terme retenu est
     placé dans la sous-zone **$a** de cette zone.
-  - **ark** — La sous-zone dans laquelle recopié l'identifiant ARK du terme. En
+  - **ark** — La sous-zone dans laquelle recopier l'identifiant ARK du terme. En
     général, c'est un code **$4** ou **$0**.
   - **name** — Le nom du thesaurus, tel qu'il sera présenté par le plugin.
   - **server** — L'URL du serveur Opentheso.
@@ -146,7 +146,7 @@ feuilles de styles XSL pour les afficher. Il faut également modifier le
 paramétrage du moteur d'indexation.
 
 Vous créez par exemple une zone **699** pour la lier à un thesaurus **Sujet**.
-Votre zone 699 doit contenir deux sous-zones, une première pour
+Votre zone 699 doit contenir deux sous-zones, une première pour le
 terme retenu et une seconde pour contenir son identifiant ARK. Ce serait par exemple :
 
 - `$a` : Sujet
@@ -209,6 +209,8 @@ Il contient une section de recherche et une section d'affichage.
   chaque terme, une icône permet de retirer le terme de la notice. Une autre
   icône permet d'ouvrir un onglet présentant le terme dans le serveur Opentheso
   relié.
+
+![Catalogage](https://raw.githubusercontent.com/fredericd/Koha-Plugin-Tamil-IdRef/master/Koha/Plugin/Tamil/Opentheso/img/cata-opentheso.png)
 
 ## VERSIONS
 
