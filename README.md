@@ -59,11 +59,11 @@ précédente. Cliquez sur Télécharger.
 
 ### Paramétrage du plugin
 
-Dans les Outils de plugin, vous voyez l'extension **Tamil Opentheso**. Vous
-lancez le plugin puis vous cliquez sur Configurer. Vous y trouver une zone de
-saisie dans laquelle se trouve la structure de données sérialisée en JSON qui
-pilote le fonctionnement du plugin.  Notez qu'après l'installation du plugin,
-les paramètres sont initialisés par défaut pour lier Koha au thesaurus
+Dans les Outils de plugin, vous voyez l'extension **Tamil Opentheso**.  Lancez
+le plugin puis cliquez sur Configurer. Vous y trouverez une zone de saisie
+contenant la structure de données, sérialisée en JSON, qui pilote le
+fonctionnement du plugin. Notez qu'après l'installation du plugin, les
+paramètres sont initialisés par défaut pour lier Koha au thesaurus
 [Pactols](https://pactols.frantiq.fr), ainsi qu'à deux autres thesaurus gérés
 dans deux autres serveurs Opentheso. C'est une bonne base de travail. Vous
 pouvez y revenir en vidant la zone de saisie.
@@ -122,7 +122,7 @@ pouvez y revenir en vidant la zone de saisie.
 }
 ```
 
-- **fields** — C'est un tableau les champs liés à un thesaurus Opentheso :
+- **fields** — C'est un tableau des champs liés à un thesaurus Opentheso :
   - **tag** — Le tag de la zone MARC où le terme est placé. Le terme retenu est
     placé dans la sous-zone **$a** de cette zone.
   - **ark** — La sous-zone dans laquelle recopier l'identifiant ARK du terme. En
@@ -138,23 +138,23 @@ pouvez y revenir en vidant la zone de saisie.
 - **catalog** — Les paramétres d'utilisation du plugin en catalogage Koha.
   - **enable** — Active ou non le plugin sur la page de catalogage.
   - **mask** — Masque les champs de catalogage _classiques_.
+
 ### Paramétrage de Koha
 
-Pour utiliser le plugin Tamil Opentheso, il faut commencer par ajouter des
-zones MARC spécifiques à ses grilles de catalogage.  Il faut modifier ses
-feuilles de styles XSL pour les afficher. Il faut également modifier le
-paramétrage du moteur d'indexation.
+Pour utiliser le plugin Tamil Opentheso, ajoutez des zones MARC spécifiques à
+vos grilles de catalogage. Moifiez vos feuilles de styles XSL pour afficher les
+nouvelles zones. Enfin, révisez le paramétrage du moteur d'indexation.
 
 Vous créez par exemple une zone **699** pour la lier à un thesaurus **Sujet**.
-Votre zone 699 doit contenir deux sous-zones, une première pour le
-terme retenu et une seconde pour contenir son identifiant ARK. Ce serait par exemple :
+La zone 699 doit contenir deux sous-zones, une première pour le terme retenu et
+une seconde pour son identifiant ARK. Ce serait par exemple :
 
 - `$a` : Sujet
 - `$4` : ARK
 
-Pour afficher cette nouvelle zone, vous modifier vos feuilles de style XSL, OPAC
-et PRO. Par exemple pour l'OPAC, vous créez un template que vous appelez
-ensuite depuis la feuille de style de la page de détail :
+Pour afficher cette nouvelle zone, vous modifiez vos feuilles de style XSL, OPAC
+et PRO. Par exemple pour l'OPAC, créez un template que vous appelez ensuite
+depuis la feuille de style de la page de détail :
 
 ```xml
 <xsl:template name="tag_opentheso">
@@ -200,7 +200,7 @@ Il contient une section de recherche et une section d'affichage.
   boîte de liste. Dans une zone de saisie, vous entrez une expression de
   recherche. La recherche est lancée en pressant la touche Entrée. Le résultat
   est affiché. En survolant les termes, une info-bulle est affichée qui permet
-  de replacer la terme dans sa hiérarchie, de voir ses traduction, et diverses
+  de replacer le terme dans sa hiérarchie, de voir ses traductions, et diverses
   informations complémentaires.
 
 - Dans la section d'affichage, les termes Opentheso liés à la notice sont
