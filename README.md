@@ -210,7 +210,7 @@ Il contient une section de recherche et une section d'affichage.
   icône permet d'ouvrir un onglet présentant le terme dans le serveur Opentheso
   relié.
 
-![Catalogage](https://raw.githubusercontent.com/fredericd/Koha-Plugin-Tamil-IdRef/master/Koha/Plugin/Tamil/Opentheso/img/cata-opentheso.png)
+![Catalogage](https://raw.githubusercontent.com/fredericd/Koha-Plugin-Tamil-Opentheso/master/Koha/Plugin/Tamil/Opentheso/img/cata-opentheso.png)
 
 ## VERSIONS
 
