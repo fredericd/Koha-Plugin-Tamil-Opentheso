@@ -110,18 +110,19 @@ sub tool {
 
 sub intranet_js {
     my $self = shift;
+    # Pas de JS inline (compatible CSP) : on charge le fichier statique du
+    # plugin et on lui passe la config via l'attribut data-config
     my $js_file = '/api/v1/contrib/opentheso/static/opentheso.js';
     my $c = $self->config();
-    $c = to_json($c);
-    return <<EOS;
-<script>
-\$(document).ready(() => {
-    \$.getScript("$js_file")
-        .done(() => \$.tamilOpentheso($c));
-    });
-</script>
-EOS
-
+    my $json = to_json($c);
+    # Le pipeline Template Toolkit encode la page en UTF-8 : il faut lui
+    # fournir une chaîne de caractères, pas des octets (sinon double encodage)
+    utf8::decode($json) unless utf8::is_utf8($json);
+    $json =~ s/&/&amp;/g;
+    $json =~ s/</&lt;/g;
+    $json =~ s/>/&gt;/g;
+    $json =~ s/"/&quot;/g;
+    return qq{<script src="$js_file" data-config="$json"></script>};
 }
 
 
@@ -208,6 +209,7 @@ sub static_routes {
         opentheso.js
         opentheso.css
         marked.min.js
+        home.js
         img/ot-logo.png
         img/logo-opentheso-titre.svg
         img/cata-opentheso.png

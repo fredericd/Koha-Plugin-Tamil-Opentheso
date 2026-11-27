@@ -72,7 +72,7 @@
   cursor: pointer;
 }
 #idxOpentheso span.opentheso_see {
-  background: transparent url('/plugin/Koha/Plugin/Tamil/Opentheso/img/ot-logo.png') no-repeat center right;
+  background: transparent url('/api/v1/contrib/opentheso/static/img/ot-logo.png') no-repeat center right;
   background-size: 15px;
   padding-left: 15px;
   margin-left: 4px;

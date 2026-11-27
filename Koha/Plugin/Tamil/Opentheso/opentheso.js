@@ -28,17 +28,24 @@ function pageCatalog() {
   });
 
   // Affichage du widget de catalogage Opentheso
-  $('.toolbar-tabs').append(`
-    <li role="presentation">
-      <a id="opentheso-tab" data-tabid="99" href="#tab99XX" aria-controls="#tab99XX" role="tab" data-toggle="tab">Opentheso</a>
+  // Koha >= 24.05 : la barre d'onglets est .toolbar-tabs-container ul.nav-tabs,
+  // les onglets Bootstrap 5 utilisent href="#tabNNXX_panel" + data-bs-toggle
+  let $navTabs = $('.toolbar-tabs-container ul.nav-tabs');
+  if (!$navTabs.length) {
+    $('.toolbar-tabs-container').prepend('<ul class="nav nav-tabs" role="tablist"></ul>');
+    $navTabs = $('.toolbar-tabs-container ul.nav-tabs');
+  }
+  $navTabs.append(`
+    <li class="nav-item" role="presentation">
+      <a class="nav-link" id="opentheso-tab" href="#tab99XX_panel" data-tabname="tab99XX" aria-controls="tab99XX_panel" role="tab" data-toggle="tab" data-bs-toggle="tab" data-target="#tab99XX_panel" data-bs-target="#tab99XX_panel">Opentheso</a>
     </li>`);
   $("#opentheso-tab").click((e) => {
     e.preventDefault();
-    selectTab(this.hash);
+    selectTab(e.currentTarget.hash);
   });
   const options = fields.map(f => `<option value="${f.tag}">${f.name}</option>`).join("\n");
   $('#addbibliotabs .tab-content').append(`
-    <div id="tab99XX" role="tabpanel" class="tab-pane active">
+    <div id="tab99XX_panel" role="tabpanel" aria-labelledby="opentheso-tab" class="tab-pane">
       <div id="idxOpentheso">
         <div class="content">
           <div class="searchsection">
@@ -59,8 +66,8 @@ function pageCatalog() {
       </div>
     </div>
   `);
-  $("a[href='#tab1XX']").click();
-  $("a[href='#tab0XX']").click();
+  $("a[href='#tab1XX_panel']").click();
+  $("a[href='#tab0XX_panel']").click();
 
   // Cacher les zones de saisies classiques
   if (c.catalog.mask) {
@@ -99,6 +106,34 @@ function pageCatalog() {
 
   // On anime la recherche dans Opentheso
   let currPathPerTerm;
+  // Clics sur les icônes : délégation sur le conteneur, car les résultats
+  // sont ré-rendus à chaque recherche/sélection
+  $('#idxOpentheso').on('click', '.opentheso_select', function(){
+    const ark = $(this).attr("ark");
+    const tag = $(this).attr("tag");
+    const term = currPathPerTerm[ark];
+    const selection = ot.selection;
+    selection[tag] ??= [];
+    if (!selection[tag].find(t => t.ark === term.ark)) {
+      selection[tag].push(term);
+    }
+    displaySelection();
+  });
+  $('#idxOpentheso').on('click', '.opentheso_remove', function(){
+    const ark = $(this).attr("ark");
+    const selection = ot.selection;
+    Object.keys(selection).forEach((tag) => {
+      selection[tag] = selection[tag].filter( term => term.ark !== ark );
+      if (selection[tag].length == 0) delete selection[tag];
+    });
+    displaySelection();
+  });
+  $('#idxOpentheso').on('click', '.opentheso_see', function(){
+    const tag = $(this).attr("tag");
+    const ark = $(this).attr("ark");
+    const url = `${ot.c.pertag[tag].server}/api/ark:/${ark}`;
+    window.open(url, '_blank');
+  });
   $('#opentheso_open').click(function(){
     $("#idxOpentheso").jqxWindow({
       width: 900, height: 900, isModal: true
@@ -107,7 +142,7 @@ function pageCatalog() {
   $('#idxOpentheso .search').keypress(function(e) {
     if (e.which == 27) {
       $('#idxOpentheso .result').html('');
-      $(this).preventDefault();
+      e.preventDefault();
     } else if (e.which === 13) {
       e.preventDefault();
       const value = $(this).val();
@@ -153,19 +188,7 @@ function pageCatalog() {
           html.push(getHtmlTerm(term, tag, 'select'));
         });
         $('#idxOpentheso .result').html(html.join("\n"));
-        $('[data-toggle="tooltip"]').tooltip({ html: 1 });
-        $('.opentheso_select').click(function(){
-          const ark = $(this).attr("ark");
-          const tag = $(this).attr("tag");
-          const term = currPathPerTerm[ark];
-          const selection = ot.selection;
-          selection[tag] ??= [];
-          if (!selection[tag].find(t => t.ark === term.ark)) {
-            selection[tag].push(term);
-          }
-          displaySelection();
-        });
-        seeEvent();
+        initTooltips();
       }).fail(function(){
         $('#idxOpentheso .search').removeClass('searching');
       });
@@ -226,17 +249,7 @@ function displaySelection() {
 
   html = html.join("\n");
   $("#idxOpentheso .selection").html(html);
-  $('[data-toggle="tooltip"]').tooltip({ html: 1 });
-  $('.opentheso_remove').click(function(){
-    const ark = $(this).attr("ark");
-    const selection = ot.selection;
-    Object.keys(selection).forEach((tag) => {
-      selection[tag] = selection[tag].filter( term => term.ark !== ark );
-      if (selection[tag].length == 0) delete selection[tag];
-    });
-   displaySelection();
-  });
-  seeEvent();
+  initTooltips();
 }
 
 
@@ -274,7 +287,7 @@ function getHtmlTerm(term, tag, action) {
         <i class='fa ${icon}' title='OK'></i>
       </span>
       <span class="opentheso_term">
-        <a class="ark" data-toggle="tooltip" data-placement="right" title="${tooltip}">${term.term}</a>
+        <a class="ark" data-toggle="tooltip" data-bs-toggle="tooltip" data-placement="right" data-bs-placement="right" title="${tooltip}">${term.term}</a>
       </span>
       <span class="opentheso_see" tag="${tag}" ark="${term.ark}"></span>
     </p>
@@ -283,13 +296,12 @@ function getHtmlTerm(term, tag, action) {
 }
 
 
-function seeEvent() {
-  $('.opentheso_see').click(function(){
-    const tag = $(this).attr("tag");
-    const ark = $(this).attr("ark");
-    const url = `${ot.c.pertag[tag].server}/api/ark:/${ark}`;
-    window.open(url, '_blank');
-  });
+function initTooltips() {
+  // Bootstrap 5 exige un booléen pour l'option "html"
+  // (html: 1 lève une TypeError qui empêche l'attachement des clics)
+  if ($.fn.tooltip) {
+    $('[data-toggle="tooltip"], [data-bs-toggle="tooltip"]').tooltip({ html: true });
+  }
 }
 
 
@@ -309,7 +321,7 @@ function pageOpacDetail() {
 
   $('.nav-tabs').append(`
     <li id="tab_opentheso" class="nav-item" role="presentation">
-     <a href="#opentheso" class="nav-link" id="tab_opentheso-tab" data-toggle="tab" role="tab" aria-controls="tab_opentheso" aria-selected="false">Opentheso</a>
+     <a href="#opentheso" class="nav-link" id="tab_opentheso-tab" data-toggle="tab" data-bs-toggle="tab" data-target="#opentheso" data-bs-target="#opentheso" role="tab" aria-controls="tab_opentheso" aria-selected="false">Opentheso</a>
     </li>
   `);
   $('.tab-content').append(`
@@ -490,6 +502,13 @@ function run(conf) {
 $.extend({
   tamilOpentheso: (c) => run(c),
 });
+
+// La config est passée via l'attribut data-config de la balise
+// <script src="...opentheso.js" data-config="..."> (pas de JS inline, compatible CSP)
+const currentScript = document.currentScript;
+if (currentScript && currentScript.dataset.config) {
+  run(JSON.parse(currentScript.dataset.config));
+}
 
 
 })( jQuery );

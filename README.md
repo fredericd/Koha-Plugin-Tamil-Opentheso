@@ -222,7 +222,11 @@ Il contient une section de recherche et une section d'affichage.
   rendu markdown en JS côté navigateur (plus de dépendance `Pithub::Markdown`) ;
   comptage des notices par ARK via le moteur de recherche Koha
   (`/api/v1/contrib/opentheso/ark_counts`) au lieu d'un appel Elasticsearch
-  spécifique à une instance
+  spécifique à une instance ; compatibilité Koha 25.11 (onglets Bootstrap 5 de
+  l'éditeur de notices, double attribut `data-toggle`/`data-bs-toggle` pour
+  couvrir aussi Bootstrap 4 : 23.11–24.05) et CSP (plus aucun JS inline : les
+  scripts sont chargés via `<script src>` avec la config en attribut
+  `data-config`)
 * **1.0.1** / février 2023 — Version initiale
 
 ## LICENCE

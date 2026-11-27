@@ -20,11 +20,6 @@
 
 <div id="opentheso-home-source" style="display:none">[% markdown | html %]</div>
 <script src="/api/v1/contrib/opentheso/static/marked.min.js"></script>
-<script>
-$(document).ready(function() {
-  var source = $('#opentheso-home-source').text();
-  $('#opentheso-home').html(marked.parse(source));
-});
-</script>
+<script src="/api/v1/contrib/opentheso/static/home.js"></script>
 
 [% INCLUDE "$PLUGIN_DIR/foot.tt" %]
