@@ -9,7 +9,6 @@ use Koha::Cache;
 use Mojo::UserAgent;
 use Mojo::JSON qw(decode_json encode_json);
 use JSON qw/ to_json /;
-use Pithub::Markdown;
 use Template;
 use YAML;
 
@@ -100,15 +99,8 @@ sub tool {
         $template = $self->get_template({ file => 'home.tt' });
         my $text = $self->mbf_read("home.md");
         utf8::decode($text);
-        my $response = Pithub::Markdown->new->render(
-            data => {
-                text => $text,
-                context => "github/gollum",
-            },
-        );
-        my $markdown = $response->raw_content;
-        utf8::decode($markdown);
-        $template->param( markdown => $markdown );
+        # Le markdown est rendu en JS dans le navigateur (marked.min.js)
+        $template->param( markdown => $text );
     }
     $template->param( c => $self->config() );
     $template->param( WS => $ws ) if $ws;
@@ -150,6 +142,7 @@ sub static_routes {
     my @filenames = qw(
         opentheso.js
         opentheso.css
+        marked.min.js
         img/ot-logo.png
         img/logo-opentheso-titre.svg
         img/cata-opentheso.png

@@ -43,11 +43,12 @@ plugins. Demandez à votre prestataire Koha de le faire, ou bien vérifiez les
 points suivants :
 
 - Dans `koha-conf.xml`, activez les plugins.
-- Installez au besoin le module Perl `Pithub::Markdown`.
 
 Les fichiers statiques du plugin (JS, CSS, images) sont servis par Koha via
 `/api/v1/contrib/opentheso/static/...` : aucune configuration d'Apache
-(alias `/plugin/...`) n'est nécessaire, à partir de Koha 23.11.
+(alias `/plugin/...`) n'est nécessaire, à partir de Koha 23.11. La page
+d'accueil est rendue en markdown côté navigateur (lib `marked` embarquée) :
+aucun module Perl supplémentaire n'est requis.
 
 **📁 TÉLÉCHARGEMENT** — Récupérez sur le site [Tamil](https://www.tamil.fr)
 l'archive de l'Extension **[Tamil
@@ -217,7 +218,8 @@ Il contient une section de recherche et une section d'affichage.
 ## VERSIONS
 
 * **1.1.0** / novembre 2026 — Fichiers statiques servis via
-  `/api/v1/contrib/opentheso/static/` (plus besoin d'alias Apache `/plugin`)
+  `/api/v1/contrib/opentheso/static/` (plus besoin d'alias Apache `/plugin`) ;
+  rendu markdown en JS côté navigateur (plus de dépendance `Pithub::Markdown`)
 * **1.0.1** / février 2023 — Version initiale
 
 ## LICENCE
