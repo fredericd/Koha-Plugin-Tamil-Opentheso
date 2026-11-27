@@ -78,7 +78,7 @@ pouvez y revenir en vidant la zone de saisie.
       "tag": "695",
       "ark": "4",
       "name": "Architecture",
-      "server": "https://opentheso.huma-num.fr/opentheso",
+      "server": "https://opentheso.huma-num.fr",
       "theso": "th366",
       "lang": "fr"
     },
@@ -86,7 +86,7 @@ pouvez y revenir en vidant la zone de saisie.
       "tag": "696",
       "ark": "4",
       "name": "Type et matériaux d'inscriptions",
-      "server": "https://thesaurus.mom.fr/opentheso",
+      "server": "https://thesaurus.mom.fr",
       "theso": "4",
       "group": "MT94,MT_13",
       "lang": "fr"
@@ -95,7 +95,7 @@ pouvez y revenir en vidant la zone de saisie.
       "tag": "697",
       "ark": "4",
       "name": "Lieu",
-      "server": "https://pactols.frantiq.fr/opentheso",
+      "server": "https://pactols.frantiq.fr",
       "theso": "th17",
       "lang": "fr"
     },
@@ -103,7 +103,7 @@ pouvez y revenir en vidant la zone de saisie.
       "tag": "698",
       "ark": "4",
       "name": "Époque",
-      "server": "https://pactols.frantiq.fr/opentheso",
+      "server": "https://pactols.frantiq.fr",
       "theso": "TH_1",
       "group": "G124",
       "lang": "fr"
@@ -112,7 +112,7 @@ pouvez y revenir en vidant la zone de saisie.
       "tag": "699",
       "ark": "4",
       "name": "Sujet",
-      "server": "https://pactols.frantiq.fr/opentheso",
+      "server": "https://pactols.frantiq.fr",
       "theso": "TH_1",
       "group": "G116,G126,G122,G173,G128,G137,G120,G135,G118,G130,G132",
       "lang": "fr"
