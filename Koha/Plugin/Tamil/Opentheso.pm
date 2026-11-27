@@ -136,6 +136,71 @@ sub api_namespace {
 }
 
 
+sub api_routes {
+    my ($self) = @_;
+
+    return {
+        '/ark_counts' => {
+            get => {
+                'x-mojo-to' => 'Tamil::Opentheso::Controller#ark_counts',
+                tags        => ['plugin'],
+                parameters  => [
+                    {
+                        name        => 'arks',
+                        in          => 'query',
+                        required    => JSON::true,
+                        type        => 'string',
+                        description => 'Liste d\'ARK séparés par des virgules',
+                    },
+                ],
+                responses => {
+                    200 => {
+                        description => 'Nombre de notices par ARK',
+                        schema      => {
+                            type       => 'object',
+                            properties => {
+                                counts => {
+                                    type                 => 'object',
+                                    additionalProperties => {
+                                        type => 'integer',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    };
+}
+
+
+sub ark_counts {
+    my ( $self, $arks ) = @_;
+
+    require Koha::SearchEngine;
+    require Koha::SearchEngine::Search;
+
+    my $searcher = Koha::SearchEngine::Search->new(
+        { index => $Koha::SearchEngine::BIBLIOS_INDEX }
+    );
+
+    my $counts = {};
+    foreach my $ark ( @$arks ) {
+        # On ne garde que des caractères sûrs pour éviter toute injection
+        # dans la requête de recherche
+        next unless $ark =~ m{^[\w\-./:]+$};
+        next if $counts->{$ark};
+        my $query = 'koha-auth-number:"' . $ark . '"';
+        my ( $error, $results, $total ) =
+            $searcher->simple_search_compat( $query, 0, 1 );
+        $counts->{$ark} = $error ? 0 : ( $total // 0 );
+    }
+
+    return $counts;
+}
+
+
 sub static_routes {
     my ( $self, $args ) = @_;
 

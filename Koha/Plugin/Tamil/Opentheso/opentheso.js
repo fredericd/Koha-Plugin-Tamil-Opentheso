@@ -444,29 +444,16 @@ function pageOpacDetail() {
           $('#opentheso').append(html);
         }
         if (retrievedTagsCount == tags.length) {
-          const urlBase = '/es/koha_frantiq_biblios/_count?q=koha-auth-number:';
           let arks = Array.from(arkCount);
-          let data = [];
-          arks.forEach(ark => data.push(
-            '{"size": 0,"query": {"query_string": { "query": "koha-auth-number:\\"' +
-            ark + '\\"" } } }'
-          ));
-          data = data.join("\n\n");
-          data = "{ }\n" + data + "\n"; // Chaque saut à ligne compte dans un multi-search ES...
-          const url = '/es/koha_frantiq_biblios/_msearch';
-          $.post({
-            type: "POST",
-            url,
-            data,
-            contentType: 'application/x-ndjson',
-            success: function(res) {
-              arks.forEach((ark, i) => {
-                const count = res.responses[i].hits.total;
-                const e = $(`.ark-${ark.replace(/\//g, '-')}`);
-                e.html(count);
+          if (arks.length) {
+            $.getJSON('/api/v1/contrib/opentheso/ark_counts', { arks: arks.join(',') })
+              .done(function(res) {
+                arks.forEach((ark) => {
+                  const e = $(`.ark-${ark.replace(/\//g, '-')}`);
+                  e.html((res.counts && res.counts[ark]) || 0);
+                });
               });
-            },
-          });
+          }
           $('.opentheso-tree-search').click(function() {
             const e = $(this);
             const ark = e.attr('ark');

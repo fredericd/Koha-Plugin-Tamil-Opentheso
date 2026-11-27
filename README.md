@@ -219,7 +219,10 @@ Il contient une section de recherche et une section d'affichage.
 
 * **1.1.0** / novembre 2026 — Fichiers statiques servis via
   `/api/v1/contrib/opentheso/static/` (plus besoin d'alias Apache `/plugin`) ;
-  rendu markdown en JS côté navigateur (plus de dépendance `Pithub::Markdown`)
+  rendu markdown en JS côté navigateur (plus de dépendance `Pithub::Markdown`) ;
+  comptage des notices par ARK via le moteur de recherche Koha
+  (`/api/v1/contrib/opentheso/ark_counts`) au lieu d'un appel Elasticsearch
+  spécifique à une instance
 * **1.0.1** / février 2023 — Version initiale
 
 ## LICENCE
