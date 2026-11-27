@@ -9,7 +9,6 @@ use Koha::Cache;
 use Mojo::UserAgent;
 use Mojo::JSON qw(decode_json encode_json);
 use JSON qw/ to_json /;
-use Pithub::Markdown;
 use Template;
 use YAML;
 
@@ -19,11 +18,11 @@ our $metadata = {
     description     => 'Intégration de Opentheso à Koha',
     author          => 'Tamil s.a.r.l.',
     date_authored   => '2023-01-27',
-    date_updated    => "2023-01-27",
-    minimum_version => '22.11.00.000',
+    date_updated    => "2026-11-27",
+    minimum_version => '23.11.00.000',
     maximum_version => undef,
     copyright       => '2023',
-    version         => '1.0.1',
+    version         => '1.1.0',
 };
 
 
@@ -100,15 +99,8 @@ sub tool {
         $template = $self->get_template({ file => 'home.tt' });
         my $text = $self->mbf_read("home.md");
         utf8::decode($text);
-        my $response = Pithub::Markdown->new->render(
-            data => {
-                text => $text,
-                context => "github/gollum",
-            },
-        );
-        my $markdown = $response->raw_content;
-        utf8::decode($markdown);
-        $template->param( markdown => $markdown );
+        # Le markdown est rendu en JS dans le navigateur (marked.min.js)
+        $template->param( markdown => $text );
     }
     $template->param( c => $self->config() );
     $template->param( WS => $ws ) if $ws;
@@ -118,23 +110,150 @@ sub tool {
 
 sub intranet_js {
     my $self = shift;
-    my $js_file = $self->get_plugin_http_path() . "/opentheso.js";
+    # Pas de JS inline (compatible CSP) : on charge le fichier statique du
+    # plugin et on lui passe la config via l'attribut data-config
+    my $js_file = '/api/v1/contrib/opentheso/static/opentheso.js';
     my $c = $self->config();
-    $c = to_json($c);
-    return <<EOS;
-<script>
-\$(document).ready(() => {
-    \$.getScript("$js_file")
-        .done(() => \$.tamilOpentheso($c));
-    });
-</script>
-EOS
-
+    my $json = to_json($c);
+    # Le pipeline Template Toolkit encode la page en UTF-8 : il faut lui
+    # fournir une chaîne de caractères, pas des octets (sinon double encodage)
+    utf8::decode($json) unless utf8::is_utf8($json);
+    $json =~ s/&/&amp;/g;
+    $json =~ s/</&lt;/g;
+    $json =~ s/>/&gt;/g;
+    $json =~ s/"/&quot;/g;
+    return qq{<script src="$js_file" data-config="$json"></script>};
 }
 
 
 sub opac_js {
     shift->intranet_js();
+}
+
+
+sub api_namespace {
+    my $self = shift;
+    return 'opentheso';
+}
+
+
+sub api_routes {
+    my ($self) = @_;
+
+    return {
+        '/ark_counts' => {
+            get => {
+                'x-mojo-to' => 'Tamil::Opentheso::Controller#ark_counts',
+                tags        => ['plugin'],
+                parameters  => [
+                    {
+                        name        => 'arks',
+                        in          => 'query',
+                        required    => JSON::true,
+                        type        => 'string',
+                        description => 'Liste d\'ARK séparés par des virgules',
+                    },
+                ],
+                responses => {
+                    200 => {
+                        description => 'Nombre de notices par ARK',
+                        schema      => {
+                            type       => 'object',
+                            properties => {
+                                counts => {
+                                    type                 => 'object',
+                                    additionalProperties => {
+                                        type => 'integer',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        },
+    };
+}
+
+
+sub ark_counts {
+    my ( $self, $arks ) = @_;
+
+    require Koha::SearchEngine;
+    require Koha::SearchEngine::Search;
+
+    my $searcher = Koha::SearchEngine::Search->new(
+        { index => $Koha::SearchEngine::BIBLIOS_INDEX }
+    );
+
+    my $counts = {};
+    foreach my $ark ( @$arks ) {
+        # On ne garde que des caractères sûrs pour éviter toute injection
+        # dans la requête de recherche
+        next unless $ark =~ m{^[\w\-./:]+$};
+        next if $counts->{$ark};
+        my $query = 'koha-auth-number:"' . $ark . '"';
+        my ( $error, $results, $total ) =
+            $searcher->simple_search_compat( $query, 0, 1 );
+        $counts->{$ark} = $error ? 0 : ( $total // 0 );
+    }
+
+    return $counts;
+}
+
+
+sub static_routes {
+    my ( $self, $args ) = @_;
+
+    my @filenames = qw(
+        opentheso.js
+        opentheso.css
+        marked.min.js
+        home.js
+        img/ot-logo.png
+        img/logo-opentheso-titre.svg
+        img/cata-opentheso.png
+        img/tamil-logo-small.png
+    );
+
+    my $spec = {};
+    foreach my $filename (@filenames) {
+        $spec->{"/$filename"} = {
+            get => {
+                'x-mojo-to' => 'Static#get',
+                tags        => ['pluginStatic'],
+                responses   => {
+                    200 => {
+                        description => 'File found',
+                        schema      => {
+                            type => 'file',
+                        },
+                    },
+                    404 => {
+                        description => 'File not found',
+                        schema      => {
+                            type => 'object',
+                            properties => {
+                                error => {
+                                    type => 'string',
+                                },
+                            },
+                        },
+                    },
+                },
+                parameters => [
+                    # This parameter is appended by jQuery to disable browser cache
+                    {
+                        name => '_',
+                        in   => 'query',
+                        type => 'string',
+                    },
+                ],
+            },
+        };
+    }
+
+    return $spec;
 }
 
 

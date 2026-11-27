@@ -43,9 +43,12 @@ plugins. Demandez à votre prestataire Koha de le faire, ou bien vérifiez les
 points suivants :
 
 - Dans `koha-conf.xml`, activez les plugins.
-- Dans le fichier de configuration d'Apache, définissez l'alias `/plugins`.
-  Faites en sorte que le répertoire pointé ait les droits nécessaires.
-- Installez au besoin le module Perl `Pithub::Markdown`.
+
+Les fichiers statiques du plugin (JS, CSS, images) sont servis par Koha via
+`/api/v1/contrib/opentheso/static/...` : aucune configuration d'Apache
+(alias `/plugin/...`) n'est nécessaire, à partir de Koha 23.11. La page
+d'accueil est rendue en markdown côté navigateur (lib `marked` embarquée) :
+aucun module Perl supplémentaire n'est requis.
 
 **📁 TÉLÉCHARGEMENT** — Récupérez sur le site [Tamil](https://www.tamil.fr)
 l'archive de l'Extension **[Tamil
@@ -75,7 +78,7 @@ pouvez y revenir en vidant la zone de saisie.
       "tag": "695",
       "ark": "4",
       "name": "Architecture",
-      "server": "https://opentheso.huma-num.fr/opentheso",
+      "server": "https://opentheso.huma-num.fr",
       "theso": "th366",
       "lang": "fr"
     },
@@ -83,7 +86,7 @@ pouvez y revenir en vidant la zone de saisie.
       "tag": "696",
       "ark": "4",
       "name": "Type et matériaux d'inscriptions",
-      "server": "https://thesaurus.mom.fr/opentheso",
+      "server": "https://thesaurus.mom.fr",
       "theso": "4",
       "group": "MT94,MT_13",
       "lang": "fr"
@@ -92,7 +95,7 @@ pouvez y revenir en vidant la zone de saisie.
       "tag": "697",
       "ark": "4",
       "name": "Lieu",
-      "server": "https://pactols.frantiq.fr/opentheso",
+      "server": "https://pactols.frantiq.fr",
       "theso": "th17",
       "lang": "fr"
     },
@@ -100,7 +103,7 @@ pouvez y revenir en vidant la zone de saisie.
       "tag": "698",
       "ark": "4",
       "name": "Époque",
-      "server": "https://pactols.frantiq.fr/opentheso",
+      "server": "https://pactols.frantiq.fr",
       "theso": "TH_1",
       "group": "G124",
       "lang": "fr"
@@ -109,7 +112,7 @@ pouvez y revenir en vidant la zone de saisie.
       "tag": "699",
       "ark": "4",
       "name": "Sujet",
-      "server": "https://pactols.frantiq.fr/opentheso",
+      "server": "https://pactols.frantiq.fr",
       "theso": "TH_1",
       "group": "G116,G126,G122,G173,G128,G137,G120,G135,G118,G130,G132",
       "lang": "fr"
@@ -214,6 +217,16 @@ Il contient une section de recherche et une section d'affichage.
 
 ## VERSIONS
 
+* **1.1.0** / novembre 2026 — Fichiers statiques servis via
+  `/api/v1/contrib/opentheso/static/` (plus besoin d'alias Apache `/plugin`) ;
+  rendu markdown en JS côté navigateur (plus de dépendance `Pithub::Markdown`) ;
+  comptage des notices par ARK via le moteur de recherche Koha
+  (`/api/v1/contrib/opentheso/ark_counts`) au lieu d'un appel Elasticsearch
+  spécifique à une instance ; compatibilité Koha 25.11 (onglets Bootstrap 5 de
+  l'éditeur de notices, double attribut `data-toggle`/`data-bs-toggle` pour
+  couvrir aussi Bootstrap 4 : 23.11–24.05) et CSP (plus aucun JS inline : les
+  scripts sont chargés via `<script src>` avec la config en attribut
+  `data-config`)
 * **1.0.1** / février 2023 — Version initiale
 
 ## LICENCE
