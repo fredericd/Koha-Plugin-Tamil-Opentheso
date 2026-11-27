@@ -19,11 +19,11 @@ our $metadata = {
     description     => 'Intégration de Opentheso à Koha',
     author          => 'Tamil s.a.r.l.',
     date_authored   => '2023-01-27',
-    date_updated    => "2023-01-27",
-    minimum_version => '22.11.00.000',
+    date_updated    => "2026-11-27",
+    minimum_version => '23.11.00.000',
     maximum_version => undef,
     copyright       => '2023',
-    version         => '1.0.1',
+    version         => '1.1.0',
 };
 
 
@@ -118,7 +118,7 @@ sub tool {
 
 sub intranet_js {
     my $self = shift;
-    my $js_file = $self->get_plugin_http_path() . "/opentheso.js";
+    my $js_file = '/api/v1/contrib/opentheso/static/opentheso.js';
     my $c = $self->config();
     $c = to_json($c);
     return <<EOS;
@@ -135,6 +135,65 @@ EOS
 
 sub opac_js {
     shift->intranet_js();
+}
+
+
+sub api_namespace {
+    my $self = shift;
+    return 'opentheso';
+}
+
+
+sub static_routes {
+    my ( $self, $args ) = @_;
+
+    my @filenames = qw(
+        opentheso.js
+        opentheso.css
+        img/ot-logo.png
+        img/logo-opentheso-titre.svg
+        img/cata-opentheso.png
+        img/tamil-logo-small.png
+    );
+
+    my $spec = {};
+    foreach my $filename (@filenames) {
+        $spec->{"/$filename"} = {
+            get => {
+                'x-mojo-to' => 'Static#get',
+                tags        => ['pluginStatic'],
+                responses   => {
+                    200 => {
+                        description => 'File found',
+                        schema      => {
+                            type => 'file',
+                        },
+                    },
+                    404 => {
+                        description => 'File not found',
+                        schema      => {
+                            type => 'object',
+                            properties => {
+                                error => {
+                                    type => 'string',
+                                },
+                            },
+                        },
+                    },
+                },
+                parameters => [
+                    # This parameter is appended by jQuery to disable browser cache
+                    {
+                        name => '_',
+                        in   => 'query',
+                        type => 'string',
+                    },
+                ],
+            },
+        };
+    }
+
+    return $spec;
 }
 
 

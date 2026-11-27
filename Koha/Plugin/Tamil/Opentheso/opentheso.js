@@ -6,7 +6,7 @@
 function pageCatalog() {
   ot.selection = {};
   // On charge les éléments externes
-  $('head').append('<link rel="stylesheet" type="text/css" href="/plugin/Koha/Plugin/Tamil/Opentheso/opentheso.css">');
+  $('head').append('<link rel="stylesheet" type="text/css" href="/api/v1/contrib/opentheso/static/opentheso.css">');
 
   const c = ot.c;
   const {fields, pertag} = c;
@@ -294,7 +294,7 @@ function seeEvent() {
 
 
 function pageOpacDetail() {
-  $('head').append('<link rel="stylesheet" type="text/css" href="/plugin/Koha/Plugin/Tamil/Opentheso/opentheso.css">');
+  $('head').append('<link rel="stylesheet" type="text/css" href="/api/v1/contrib/opentheso/static/opentheso.css">');
   const {c} = ot;
   const arkPerTag = {};
   // Récupération des arks
